@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>John will kill you...</title>
+</head>
+
+<body onload="getAllChoices()">
+    <h1>John Wick Thingy</h5><br>
+        <h3>Welcome!</h3>
+        <hr>
+        <center>
+            <h3>Where do you want the fight to be in?</h3>
+            <select id="place"></select>
+        </center>
+        <hr>
+        <center>
+            <h3>Who are you?</h3>
+            <select id="person"></select>
+        </center>
+        <hr>
+        <center>
+            <h3>Weapon of choice?</h3>
+            <select id="weapon"></select>
+        </center>
+        <hr>
+        <button onclick="evaluateAns()">Evaluate</button>
+        <script>
+            async function getAllChoices() {
+                let choices = await (await fetch('/api/choices')).json();
+
+                loadWhere(choices);
+                loadType(choices);
+                loadGun(choices);
+            }
+
+            async function loadWhere(choices) {
+                let str = "";
+                choices.where.forEach(element => {
+                    str += `<option value="${element}">${element}</option>`
+                });
+                document.querySelector('#place').innerHTML = str;
+            }
+
+            async function loadType(choices) {
+                let str = "";
+                choices.who.forEach(element => {
+                    str += `<option value="${element}">${element}</option>`
+                });
+                document.querySelector('#person').innerHTML = str;
+            }
+
+            async function loadGun(choices) {
+                let str = "";
+                choices.weapon.forEach(element => {
+                    str += `<option value="${element}">${element}</option>`
+                });
+                document.querySelector('#weapon').innerHTML = str;
+            }
+
+            async function evaluateAns() {
+                let packet = {
+                    "where": document.querySelector('#place').value,
+                    "who": document.querySelector('#person').value,
+                    "weapon": document.querySelector('#weapon').value
+                }
+                let response = await (await fetch('/api/getResult', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                        // 'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: JSON.stringify(packet)
+                })).json()
+                console.log(packet);
+                console.log(response);
+                if (response.positive == null) {
+                    alert("you'll be killed indefinately");
+                } else {
+                    alert("There are " + (response.positive * 100).toFixed(2) + "% chances that you'll die in the first half of the movie!");
+                }
+            }
+        </script>
+</body>
+
+</html>
